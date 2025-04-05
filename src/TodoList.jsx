@@ -13,7 +13,7 @@ export default function TodoList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("My Day");
   const [editingTaskId, setEditingTaskId] = useState(null); // Track the task being edited
-  const [editedTask, setEditedTask] = useState(""); // Store the edited task text
+  const [editedTask, setEditedTask] = useState({}); // Store the edited task details
 
   const handleAddTask = () => {
     if (newTodo.trim() === "" || !dueDate || !time) {
@@ -56,19 +56,19 @@ export default function TodoList() {
     );
   };
 
-  const handleEditTask = (id, task) => {
-    setEditingTaskId(id); // Set the task being edited
-    setEditedTask(task); // Pre-fill the input with the current task text
+  const handleEditTask = (todo) => {
+    setEditingTaskId(todo.id); // Set the task being edited
+    setEditedTask({ ...todo }); // Pre-fill the input with the current task details
   };
 
   const handleSaveTask = (id) => {
     setTodos((prevTodos) =>
       prevTodos.map((todo) =>
-        todo.id === id ? { ...todo, task: editedTask } : todo
+        todo.id === id ? { ...todo, ...editedTask } : todo
       )
     );
     setEditingTaskId(null); // Exit edit mode
-    setEditedTask(""); // Clear the edited task input
+    setEditedTask({}); // Clear the edited task input
   };
 
   const filteredTodos = todos
@@ -198,10 +198,49 @@ export default function TodoList() {
                 <div>
                   <input
                     type="text"
-                    value={editedTask}
-                    onChange={(e) => setEditedTask(e.target.value)}
+                    value={editedTask.task}
+                    onChange={(e) =>
+                      setEditedTask({ ...editedTask, task: e.target.value })
+                    }
                     className="todo-input"
                   />
+                  <DatePicker
+                    selected={new Date(editedTask.dueDate)}
+                    onChange={(date) =>
+                      setEditedTask({ ...editedTask, dueDate: date })
+                    }
+                    className="todo-input"
+                  />
+                  <input
+                    type="time"
+                    value={editedTask.time}
+                    onChange={(e) =>
+                      setEditedTask({ ...editedTask, time: e.target.value })
+                    }
+                    className="todo-input"
+                  />
+                  <select
+                    value={editedTask.category}
+                    onChange={(e) =>
+                      setEditedTask({ ...editedTask, category: e.target.value })
+                    }
+                    className="todo-input"
+                  >
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Shopping">Shopping</option>
+                  </select>
+                  <select
+                    value={editedTask.priority}
+                    onChange={(e) =>
+                      setEditedTask({ ...editedTask, priority: e.target.value })
+                    }
+                    className="todo-input"
+                  >
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
                   <button
                     onClick={() => handleSaveTask(todo.id)}
                     className="save-button"
@@ -227,7 +266,7 @@ export default function TodoList() {
                       {todo.done ? "Undo" : "Done"}
                     </button>
                     <button
-                      onClick={() => handleEditTask(todo.id, todo.task)}
+                      onClick={() => handleEditTask(todo)}
                       className="edit-button"
                     >
                       Edit
