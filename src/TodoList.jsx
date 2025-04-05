@@ -12,6 +12,8 @@ export default function TodoList() {
   const [priority, setPriority] = useState("Medium");
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("My Day");
+  const [editingTaskId, setEditingTaskId] = useState(null); // Track the task being edited
+  const [editedTask, setEditedTask] = useState(""); // Store the edited task text
 
   const handleAddTask = () => {
     if (newTodo.trim() === "" || !dueDate || !time) {
@@ -52,6 +54,21 @@ export default function TodoList() {
         todo.id === id ? { ...todo, done: !todo.done } : todo
       )
     );
+  };
+
+  const handleEditTask = (id, task) => {
+    setEditingTaskId(id); // Set the task being edited
+    setEditedTask(task); // Pre-fill the input with the current task text
+  };
+
+  const handleSaveTask = (id) => {
+    setTodos((prevTodos) =>
+      prevTodos.map((todo) =>
+        todo.id === id ? { ...todo, task: editedTask } : todo
+      )
+    );
+    setEditingTaskId(null); // Exit edit mode
+    setEditedTask(""); // Clear the edited task input
   };
 
   const filteredTodos = todos
@@ -177,28 +194,53 @@ export default function TodoList() {
         <ul className="todo-list">
           {filteredTodos.map((todo) => (
             <li key={todo.id} className="todo-item">
-              <span
-                style={{
-                  textDecoration: todo.done ? "line-through" : "none",
-                }}
-              >
-                {todo.task} - {todo.category} - {todo.priority} - Due:{" "}
-                {todo.dueDate.toLocaleDateString()} at {todo.time}
-              </span>
-              <div>
-                <button
-                  onClick={() => handleMarkAsDone(todo.id)}
-                  className="done-button"
-                >
-                  {todo.done ? "Undo" : "Done"}
-                </button>
-                <button
-                  onClick={() => handleDeleteTask(todo.id)}
-                  className="delete-button"
-                >
-                  Delete
-                </button>
-              </div>
+              {editingTaskId === todo.id ? (
+                <div>
+                  <input
+                    type="text"
+                    value={editedTask}
+                    onChange={(e) => setEditedTask(e.target.value)}
+                    className="todo-input"
+                  />
+                  <button
+                    onClick={() => handleSaveTask(todo.id)}
+                    className="save-button"
+                  >
+                    Save
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <span
+                    style={{
+                      textDecoration: todo.done ? "line-through" : "none",
+                    }}
+                  >
+                    {todo.task} - {todo.category} - {todo.priority} - Due:{" "}
+                    {todo.dueDate.toLocaleDateString()} at {todo.time}
+                  </span>
+                  <div>
+                    <button
+                      onClick={() => handleMarkAsDone(todo.id)}
+                      className="done-button"
+                    >
+                      {todo.done ? "Undo" : "Done"}
+                    </button>
+                    <button
+                      onClick={() => handleEditTask(todo.id, todo.task)}
+                      className="edit-button"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTask(todo.id)}
+                      className="delete-button"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
             </li>
           ))}
         </ul>
